@@ -3,6 +3,8 @@ import { Popover } from "react-tiny-popover";
 import { useMutation } from "@tanstack/react-query";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { importCompanies, ImportResponse } from "./api/companyApi";
+import { Link } from "react-router";
 
 const IMPORT_MODES = [
   {
@@ -43,21 +45,10 @@ const FileImport: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // --- Mutation for file upload ---
-  type ImportResponse = { inserted: number; updated: number; skipped: number };
-
   const mutation = useMutation<ImportResponse, Error, void>({
     mutationFn: async () => {
       if (!file || !importMode) throw new Error("Missing file or import mode");
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("mode", importMode);
-      // Replace /api/import with your backend endpoint
-      const res = await fetch("/api/import", {
-        method: "POST",
-        body: formData,
-      });
-      if (!res.ok) throw new Error(await res.text());
-      return res.json();
+      return importCompanies(file, importMode);
     },
     onSuccess: (data) => {
       toast.success(
@@ -272,7 +263,12 @@ const FileImport: React.FC = () => {
                         <path d="M16,24a2,2,0,0,1-2-2V16a2,2,0,0,1,4,0v6A2,2,0,0,1,16,24Zm0-8v0Z" />
                       </g>
                       <g id="frame">
-                        <rect className="cls-1" height="32" width="32" fill="none" />
+                        <rect
+                          className="cls-1"
+                          height="32"
+                          width="32"
+                          fill="none"
+                        />
                       </g>
                     </svg>
                   </span>
@@ -282,10 +278,31 @@ const FileImport: React.FC = () => {
           ))}
         </div>
         {/* Submit button */}
-        <div className="mx-12 pb-10 pt-8 flex flex-col items-center gap-2">
+        <div className="mx-12 pb-10 pt-8 flex flex-row justify-center items-center gap-2">
+          <Link
+            to="/"
+            className="inline-flex items-center px-4 py-2 h-12 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <svg
+              className="-ml-1 mr-2 h-5 w-5 text-gray-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+            Back to Companies
+          </Link>
+
           <button
             type="submit"
-            className="w-full sm:w-auto px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all disabled:opacity-60 flex items-center gap-2 justify-center"
+            className="w-full sm:w-auto px-8 py-2 h-12 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all disabled:opacity-60 flex items-center gap-2 justify-center cursor-pointer"
             disabled={mutation.isPending}
           >
             <svg
